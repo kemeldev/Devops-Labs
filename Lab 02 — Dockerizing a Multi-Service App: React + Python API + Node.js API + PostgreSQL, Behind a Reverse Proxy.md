@@ -1,4 +1,4 @@
-# Lab 02 — Dockerizing a Multi-Service App: React + Python API + Node.js API + PostgreSQL, Behind a Reverse Proxy
+# Lab 02 — Dockerizing a Multi-Service App: React + Python API + Node.js API + PostgreSQL, Behind a Reverse Proxy.
 
 ## Objective
 Carry the routing/traffic concepts from Lab 01 into containers, and use them as the vehicle to build real Docker fluency:
