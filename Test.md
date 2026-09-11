@@ -38,7 +38,8 @@ Scope of "reachable from anywhere": reachable from anywhere on this /22 subnet â
 
 ## Architecture (target state)
 
-(Describe target topology and architecture here.)
+<img width="610" height="208" alt="image" src="https://github.com/user-attachments/assets/90a175e1-6d7c-410f-bc65-512e5a19ea0d" />
+
 
 ---
 
