@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: node-api-config
+  labels:
+    app: node-api
+data:
+  DB_HOST: "postgres-db"
+  DB_PORT: "5432"
+  DB_NAME: "appdb"
+  DB_SSL: "false"
+  DB_CONNECT_TIMEOUT: "5"

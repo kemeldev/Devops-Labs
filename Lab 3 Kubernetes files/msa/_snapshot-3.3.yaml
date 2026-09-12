@@ -1,0 +1,827 @@
+apiVersion: v1
+items:
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    annotations:
+      deployment.kubernetes.io/revision: "3"
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"apps/v1","kind":"Deployment","metadata":{"annotations":{},"labels":{"app":"node-api"},"name":"node-api","namespace":"multi-service-app"},"spec":{"replicas":1,"selector":{"matchLabels":{"app":"node-api"}},"template":{"metadata":{"labels":{"app":"node-api"}},"spec":{"automountServiceAccountToken":false,"containers":[{"env":[{"name":"DB_USER","valueFrom":{"secretKeyRef":{"key":"username","name":"db-credentials"}}},{"name":"DB_PASSWORD","valueFrom":{"secretKeyRef":{"key":"password","name":"db-credentials"}}},{"name":"POD_NAME","valueFrom":{"fieldRef":{"fieldPath":"metadata.name"}}},{"name":"NODE_NAME","valueFrom":{"fieldRef":{"fieldPath":"spec.nodeName"}}},{"name":"POD_IP","valueFrom":{"fieldRef":{"fieldPath":"status.podIP"}}}],"envFrom":[{"configMapRef":{"name":"node-api-config"}}],"image":"node-api:0.1.0","imagePullPolicy":"IfNotPresent","livenessProbe":{"failureThreshold":3,"httpGet":{"path":"/health","port":"http"},"periodSeconds":15,"timeoutSeconds":5},"name":"node-api","ports":[{"containerPort":8002,"name":"http"}],"readinessProbe":{"failureThreshold":3,"httpGet":{"path":"/health","port":"http"},"periodSeconds":5,"timeoutSeconds":3},"resources":{"limits":{"memory":"256Mi"},"requests":{"cpu":"50m","memory":"64Mi"}},"securityContext":{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"runAsNonRoot":true,"runAsUser":1000,"seccompProfile":{"type":"RuntimeDefault"}},"startupProbe":{"failureThreshold":20,"httpGet":{"path":"/health","port":"http"},"periodSeconds":3}}],"initContainers":[{"command":["sh","-c","echo \"Waiting for postgres-db:5432 ...\"\nuntil pg_isready -h postgres-db -p 5432 -q; do\n  echo \"  not ready, retrying in 2s\"\n  sleep 2\ndone\necho \"postgres-db is accepting connections\"\n"],"image":"postgres:16-alpine","imagePullPolicy":"IfNotPresent","name":"wait-for-postgres","securityContext":{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"runAsNonRoot":true,"runAsUser":70}}]}}}}
+    creationTimestamp: "2026-09-09T17:19:10Z"
+    generation: 3
+    labels:
+      app: node-api
+    name: node-api
+    namespace: multi-service-app
+    resourceVersion: "334288"
+    uid: 32021808-6385-43c2-b38c-5f68e63d75ff
+  spec:
+    progressDeadlineSeconds: 600
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        app: node-api
+    strategy:
+      rollingUpdate:
+        maxSurge: 25%
+        maxUnavailable: 25%
+      type: RollingUpdate
+    template:
+      metadata:
+        labels:
+          app: node-api
+      spec:
+        automountServiceAccountToken: false
+        containers:
+        - env:
+          - name: DB_USER
+            valueFrom:
+              secretKeyRef:
+                key: username
+                name: db-credentials
+          - name: DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: password
+                name: db-credentials
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.name
+          - name: NODE_NAME
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: spec.nodeName
+          - name: POD_IP
+            valueFrom:
+              fieldRef:
+                apiVersion: v1
+                fieldPath: status.podIP
+          envFrom:
+          - configMapRef:
+              name: node-api-config
+          image: node-api:0.1.0
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: http
+              scheme: HTTP
+            periodSeconds: 15
+            successThreshold: 1
+            timeoutSeconds: 5
+          name: node-api
+          ports:
+          - containerPort: 8002
+            name: http
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: http
+              scheme: HTTP
+            periodSeconds: 5
+            successThreshold: 1
+            timeoutSeconds: 3
+          resources:
+            limits:
+              memory: 256Mi
+            requests:
+              cpu: 50m
+              memory: 64Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            runAsNonRoot: true
+            runAsUser: 1000
+            seccompProfile:
+              type: RuntimeDefault
+          startupProbe:
+            failureThreshold: 20
+            httpGet:
+              path: /health
+              port: http
+              scheme: HTTP
+            periodSeconds: 3
+            successThreshold: 1
+            timeoutSeconds: 1
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        initContainers:
+        - command:
+          - sh
+          - -c
+          - |
+            echo "Waiting for postgres-db:5432 ..."
+            until pg_isready -h postgres-db -p 5432 -q; do
+              echo "  not ready, retrying in 2s"
+              sleep 2
+            done
+            echo "postgres-db is accepting connections"
+          image: postgres:16-alpine
+          imagePullPolicy: IfNotPresent
+          name: wait-for-postgres
+          resources: {}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            runAsNonRoot: true
+            runAsUser: 70
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+  status:
+    availableReplicas: 1
+    conditions:
+    - lastTransitionTime: "2026-09-09T17:29:22Z"
+      lastUpdateTime: "2026-09-09T17:29:22Z"
+      message: Deployment has minimum availability.
+      reason: MinimumReplicasAvailable
+      status: "True"
+      type: Available
+    - lastTransitionTime: "2026-09-09T17:19:10Z"
+      lastUpdateTime: "2026-09-09T17:29:22Z"
+      message: ReplicaSet "node-api-8d9b44d84" has successfully progressed.
+      reason: NewReplicaSetAvailable
+      status: "True"
+      type: Progressing
+    observedGeneration: 3
+    readyReplicas: 1
+    replicas: 1
+    terminatingReplicas: 0
+    updatedReplicas: 1
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    annotations:
+      deployment.kubernetes.io/revision: "1"
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"apps/v1","kind":"Deployment","metadata":{"annotations":{},"labels":{"app":"postgres"},"name":"postgres","namespace":"multi-service-app"},"spec":{"replicas":1,"selector":{"matchLabels":{"app":"postgres"}},"strategy":{"type":"Recreate"},"template":{"metadata":{"labels":{"app":"postgres"}},"spec":{"containers":[{"env":[{"name":"POSTGRES_USER","valueFrom":{"secretKeyRef":{"key":"username","name":"db-credentials"}}},{"name":"POSTGRES_PASSWORD","valueFrom":{"secretKeyRef":{"key":"password","name":"db-credentials"}}},{"name":"PGDATA","value":"/var/lib/postgresql/data/pgdata"}],"envFrom":[{"configMapRef":{"name":"postgres-config"}}],"image":"postgres:16-alpine","imagePullPolicy":"IfNotPresent","livenessProbe":{"exec":{"command":["sh","-c","pg_isready -U \"$POSTGRES_USER\" -d \"$POSTGRES_DB\" -h 127.0.0.1"]},"failureThreshold":6,"initialDelaySeconds":30,"periodSeconds":10,"timeoutSeconds":5},"name":"postgres","ports":[{"containerPort":5432,"name":"postgres"}],"readinessProbe":{"exec":{"command":["sh","-c","pg_isready -U \"$POSTGRES_USER\" -d \"$POSTGRES_DB\" -h 127.0.0.1"]},"failureThreshold":3,"initialDelaySeconds":5,"periodSeconds":5,"timeoutSeconds":3},"volumeMounts":[{"mountPath":"/var/lib/postgresql/data","name":"postgres-data"}]}],"volumes":[{"name":"postgres-data","persistentVolumeClaim":{"claimName":"postgres-pvc"}}]}}}}
+    creationTimestamp: "2026-09-08T04:48:03Z"
+    generation: 3
+    labels:
+      app: postgres
+    name: postgres
+    namespace: multi-service-app
+    resourceVersion: "320459"
+    uid: 9d18d49d-51ea-4334-ae75-8b8140e739da
+  spec:
+    progressDeadlineSeconds: 600
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        app: postgres
+    strategy:
+      type: Recreate
+    template:
+      metadata:
+        labels:
+          app: postgres
+      spec:
+        containers:
+        - env:
+          - name: POSTGRES_USER
+            valueFrom:
+              secretKeyRef:
+                key: username
+                name: db-credentials
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: password
+                name: db-credentials
+          - name: PGDATA
+            value: /var/lib/postgresql/data/pgdata
+          envFrom:
+          - configMapRef:
+              name: postgres-config
+          image: postgres:16-alpine
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            exec:
+              command:
+              - sh
+              - -c
+              - pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB" -h 127.0.0.1
+            failureThreshold: 6
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 5
+          name: postgres
+          ports:
+          - containerPort: 5432
+            name: postgres
+            protocol: TCP
+          readinessProbe:
+            exec:
+              command:
+              - sh
+              - -c
+              - pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB" -h 127.0.0.1
+            failureThreshold: 3
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            successThreshold: 1
+            timeoutSeconds: 3
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /var/lib/postgresql/data
+            name: postgres-data
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+        volumes:
+        - name: postgres-data
+          persistentVolumeClaim:
+            claimName: postgres-pvc
+  status:
+    availableReplicas: 1
+    conditions:
+    - lastTransitionTime: "2026-09-08T04:48:03Z"
+      lastUpdateTime: "2026-09-08T04:48:13Z"
+      message: ReplicaSet "postgres-5958c859d5" has successfully progressed.
+      reason: NewReplicaSetAvailable
+      status: "True"
+      type: Progressing
+    - lastTransitionTime: "2026-09-09T04:28:54Z"
+      lastUpdateTime: "2026-09-09T04:28:54Z"
+      message: Deployment has minimum availability.
+      reason: MinimumReplicasAvailable
+      status: "True"
+      type: Available
+    observedGeneration: 3
+    readyReplicas: 1
+    replicas: 1
+    terminatingReplicas: 0
+    updatedReplicas: 1
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    annotations:
+      deployment.kubernetes.io/revision: "4"
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"apps/v1","kind":"Deployment","metadata":{"annotations":{},"labels":{"app":"python-api"},"name":"python-api","namespace":"multi-service-app"},"spec":{"replicas":1,"selector":{"matchLabels":{"app":"python-api"}},"template":{"metadata":{"labels":{"app":"python-api"}},"spec":{"containers":[{"env":[{"name":"DB_USER","valueFrom":{"secretKeyRef":{"key":"username","name":"db-credentials"}}},{"name":"DB_PASSWORD","valueFrom":{"secretKeyRef":{"key":"password","name":"db-credentials"}}}],"envFrom":[{"configMapRef":{"name":"python-api-config"}}],"image":"python-api:0.1.0","imagePullPolicy":"IfNotPresent","livenessProbe":{"failureThreshold":3,"httpGet":{"path":"/health","port":"http"},"initialDelaySeconds":20,"periodSeconds":15,"timeoutSeconds":5},"name":"python-api","ports":[{"containerPort":8001,"name":"http"}],"readinessProbe":{"failureThreshold":3,"httpGet":{"path":"/health","port":"http"},"initialDelaySeconds":5,"periodSeconds":5,"timeoutSeconds":3}}],"initContainers":[{"command":["sh","-c","echo \"Waiting for postgres-db:5432 ...\"\nuntil pg_isready -h postgres-db -p 5432 -q; do\n  echo \"  not ready, retrying in 2s\"\n  sleep 2\ndone\necho \"postgres-db is accepting connections\"\n"],"image":"postgres:16-alpine","imagePullPolicy":"IfNotPresent","name":"wait-for-postgres"}]}}}}
+    creationTimestamp: "2026-09-09T04:25:12Z"
+    generation: 4
+    labels:
+      app: python-api
+    name: python-api
+    namespace: multi-service-app
+    resourceVersion: "330149"
+    uid: dc5c61d4-ba87-46b7-a51f-cfed2c99876a
+  spec:
+    progressDeadlineSeconds: 600
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        app: python-api
+    strategy:
+      rollingUpdate:
+        maxSurge: 25%
+        maxUnavailable: 25%
+      type: RollingUpdate
+    template:
+      metadata:
+        annotations:
+          kubectl.kubernetes.io/restartedAt: "2026-09-08T23:52:21-06:00"
+        labels:
+          app: python-api
+      spec:
+        containers:
+        - env:
+          - name: DB_USER
+            valueFrom:
+              secretKeyRef:
+                key: username
+                name: db-credentials
+          - name: DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: password
+                name: db-credentials
+          envFrom:
+          - configMapRef:
+              name: python-api-config
+          image: python-api:0.1.0
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 20
+            periodSeconds: 15
+            successThreshold: 1
+            timeoutSeconds: 5
+          name: python-api
+          ports:
+          - containerPort: 8001
+            name: http
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /health
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            successThreshold: 1
+            timeoutSeconds: 3
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        initContainers:
+        - command:
+          - sh
+          - -c
+          - |
+            echo "Waiting for postgres-db:5432 ..."
+            until pg_isready -h postgres-db -p 5432 -q; do
+              echo "  not ready, retrying in 2s"
+              sleep 2
+            done
+            echo "postgres-db is accepting connections"
+          image: postgres:16-alpine
+          imagePullPolicy: IfNotPresent
+          name: wait-for-postgres
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+  status:
+    availableReplicas: 1
+    conditions:
+    - lastTransitionTime: "2026-09-09T04:25:12Z"
+      lastUpdateTime: "2026-09-09T05:52:28Z"
+      message: ReplicaSet "python-api-5cd5948567" has successfully progressed.
+      reason: NewReplicaSetAvailable
+      status: "True"
+      type: Progressing
+    - lastTransitionTime: "2026-09-09T16:47:54Z"
+      lastUpdateTime: "2026-09-09T16:47:54Z"
+      message: Deployment has minimum availability.
+      reason: MinimumReplicasAvailable
+      status: "True"
+      type: Available
+    observedGeneration: 4
+    readyReplicas: 1
+    replicas: 1
+    terminatingReplicas: 0
+    updatedReplicas: 1
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    annotations:
+      deployment.kubernetes.io/revision: "2"
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"apps/v1","kind":"Deployment","metadata":{"annotations":{},"labels":{"app":"react-frontend"},"name":"react-frontend","namespace":"multi-service-app"},"spec":{"replicas":1,"selector":{"matchLabels":{"app":"react-frontend"}},"template":{"metadata":{"labels":{"app":"react-frontend"}},"spec":{"automountServiceAccountToken":false,"containers":[{"image":"react-frontend:0.1.0","imagePullPolicy":"IfNotPresent","livenessProbe":{"failureThreshold":3,"httpGet":{"path":"/","port":"http"},"periodSeconds":20},"name":"nginx","ports":[{"containerPort":8080,"name":"http"}],"readinessProbe":{"failureThreshold":3,"httpGet":{"path":"/","port":"http"},"periodSeconds":5},"resources":{"limits":{"memory":"128Mi"},"requests":{"cpu":"10m","memory":"32Mi"}},"securityContext":{"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"seccompProfile":{"type":"RuntimeDefault"}}}]}}}}
+    creationTimestamp: "2026-09-09T18:06:58Z"
+    generation: 2
+    labels:
+      app: react-frontend
+    name: react-frontend
+    namespace: multi-service-app
+    resourceVersion: "338049"
+    uid: dab2e139-6d01-4ab5-9aa6-52cdc0fbeb46
+  spec:
+    progressDeadlineSeconds: 600
+    replicas: 1
+    revisionHistoryLimit: 10
+    selector:
+      matchLabels:
+        app: react-frontend
+    strategy:
+      rollingUpdate:
+        maxSurge: 25%
+        maxUnavailable: 25%
+      type: RollingUpdate
+    template:
+      metadata:
+        labels:
+          app: react-frontend
+      spec:
+        automountServiceAccountToken: false
+        containers:
+        - image: react-frontend:0.1.0
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /
+              port: http
+              scheme: HTTP
+            periodSeconds: 20
+            successThreshold: 1
+            timeoutSeconds: 1
+          name: nginx
+          ports:
+          - containerPort: 8080
+            name: http
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /
+              port: http
+              scheme: HTTP
+            periodSeconds: 5
+            successThreshold: 1
+            timeoutSeconds: 1
+          resources:
+            limits:
+              memory: 128Mi
+            requests:
+              cpu: 10m
+              memory: 32Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
+  status:
+    availableReplicas: 1
+    conditions:
+    - lastTransitionTime: "2026-09-09T18:07:39Z"
+      lastUpdateTime: "2026-09-09T18:07:39Z"
+      message: Deployment has minimum availability.
+      reason: MinimumReplicasAvailable
+      status: "True"
+      type: Available
+    - lastTransitionTime: "2026-09-09T18:06:58Z"
+      lastUpdateTime: "2026-09-09T18:07:39Z"
+      message: ReplicaSet "react-frontend-7759d55595" has successfully progressed.
+      reason: NewReplicaSetAvailable
+      status: "True"
+      type: Progressing
+    observedGeneration: 2
+    readyReplicas: 1
+    replicas: 1
+    terminatingReplicas: 0
+    updatedReplicas: 1
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"v1","kind":"Service","metadata":{"annotations":{},"labels":{"app":"node-api"},"name":"node-api","namespace":"multi-service-app"},"spec":{"ports":[{"name":"http","port":80,"protocol":"TCP","targetPort":"http"}],"selector":{"app":"node-api"},"type":"ClusterIP"}}
+    creationTimestamp: "2026-09-09T17:32:47Z"
+    labels:
+      app: node-api
+    name: node-api
+    namespace: multi-service-app
+    resourceVersion: "334615"
+    uid: 5dc99869-3b46-4e71-a076-9c0b05a4dd09
+  spec:
+    clusterIP: 10.96.99.166
+    clusterIPs:
+    - 10.96.99.166
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: http
+    selector:
+      app: node-api
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"v1","kind":"Service","metadata":{"annotations":{},"labels":{"app":"postgres"},"name":"postgres-db","namespace":"multi-service-app"},"spec":{"ports":[{"name":"postgres","port":5432,"protocol":"TCP","targetPort":5432}],"selector":{"app":"postgres"},"type":"ClusterIP"}}
+    creationTimestamp: "2026-09-09T04:06:55Z"
+    labels:
+      app: postgres
+    name: postgres-db
+    namespace: multi-service-app
+    resourceVersion: "318247"
+    uid: e5fc8d06-238a-41e1-9ee4-1580169a9444
+  spec:
+    clusterIP: 10.96.215.20
+    clusterIPs:
+    - 10.96.215.20
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - name: postgres
+      port: 5432
+      protocol: TCP
+      targetPort: 5432
+    selector:
+      app: postgres
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"v1","kind":"Service","metadata":{"annotations":{},"labels":{"app":"python-api"},"name":"python-api","namespace":"multi-service-app"},"spec":{"ports":[{"name":"http","port":80,"protocol":"TCP","targetPort":"http"}],"selector":{"app":"python-api"},"type":"ClusterIP"}}
+    creationTimestamp: "2026-09-09T05:33:50Z"
+    labels:
+      app: python-api
+    name: python-api
+    namespace: multi-service-app
+    resourceVersion: "326723"
+    uid: 111f71b0-6fa7-45a1-a154-d97c32ecccd2
+  spec:
+    clusterIP: 10.96.152.111
+    clusterIPs:
+    - 10.96.152.111
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: http
+    selector:
+      app: python-api
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"v1","kind":"Service","metadata":{"annotations":{},"labels":{"app":"react-frontend"},"name":"react-frontend","namespace":"multi-service-app"},"spec":{"ports":[{"name":"http","port":80,"protocol":"TCP","targetPort":"http"}],"selector":{"app":"react-frontend"},"type":"ClusterIP"}}
+    creationTimestamp: "2026-09-09T18:08:14Z"
+    labels:
+      app: react-frontend
+    name: react-frontend
+    namespace: multi-service-app
+    resourceVersion: "338112"
+    uid: 4b97e56b-907c-4c53-be56-f426c437bb5f
+  spec:
+    clusterIP: 10.96.213.243
+    clusterIPs:
+    - 10.96.213.243
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: http
+    selector:
+      app: react-frontend
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  data:
+    ca.crt: |
+      -----BEGIN CERTIFICATE-----
+      MIIDBTCCAe2gAwIBAgIIaoDRT5+tcDAwDQYJKoZIhvcNAQELBQAwFTETMBEGA1UE
+      AxMKa3ViZXJuZXRlczAeFw0yNjA5MDYyMTExMjFaFw0zNjA5MDMyMTE2MjFaMBUx
+      EzARBgNVBAMTCmt1YmVybmV0ZXMwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEK
+      AoIBAQDP/B7sEsOLAq2hHk7s5cb08InbGYR3E731Kpa2MJXOBFVTCqEli1+mzcwg
+      x3fokv00Z+hu0mxmkAwxnQF8eZrCK5ljDq3xAuQa7MFGYK9a9FnfQaG/MWusFpJD
+      pRfeutDYiIQWHBshFARadat8SbBv59Q7oxiDzCTxASgGJTvcXSXjV+BRlFgVbm1K
+      TNE1Dzcu7ZJyxt/kjF9vXJXhDuD5kEcMmn4FlmKe04eRLYGUyv91ZlNEzg5442rv
+      tu4BY7PHADsZBxlUQ8rstbOayNaemlb8LfL71lC/30iSUM2yCBZZtJ9QEV5Tf1Mt
+      3lUquBIrhX9nVNp/tK1CuEQthOEfAgMBAAGjWTBXMA4GA1UdDwEB/wQEAwICpDAP
+      BgNVHRMBAf8EBTADAQH/MB0GA1UdDgQWBBR0OVdwH49jWE/KGWxNP8JNT7AXZjAV
+      BgNVHREEDjAMggprdWJlcm5ldGVzMA0GCSqGSIb3DQEBCwUAA4IBAQCkzFSkF3yB
+      OTcyBLMcQ+wvBrKbW43CpFnL5JnBhCFiW1KO9aGmlbO/D61cRowxw9GYF7QfjxWW
+      4gklbLCg3URgDrhWuYX4t1VuwRyxcSHCQaEyZZDhQRYuu67bI8EnVfWgCXownQnC
+      znDc1DogpCkHgnGqYefSsiCyM+HUOk6E/V8rtsxg4RZJUVXwGTd6yJNbh2aQE6DG
+      esoaLBeT/FfjaCFnhnEYfMZT8b7jvkY3zQtIhJHYim4lDwa5HzfL8FlaNsJPBk8G
+      Ptfv7WVsXs4ELaavqUlScZxePuTlzirjM46THHzNmIiNk8gd0VkgPhCyoqunzfLQ
+      WA1emzPwyDBU
+      -----END CERTIFICATE-----
+  kind: ConfigMap
+  metadata:
+    annotations:
+      kubernetes.io/description: Contains a CA bundle that can be used to verify the
+        kube-apiserver when using internal endpoints such as the internal service
+        IP or kubernetes.default.svc. No other usage is guaranteed across distributions
+        of Kubernetes clusters.
+    creationTimestamp: "2026-09-07T21:57:18Z"
+    name: kube-root-ca.crt
+    namespace: multi-service-app
+    resourceVersion: "144291"
+    uid: 2bc7a2bb-4ac5-4ff9-8bcb-6747a494fbeb
+- apiVersion: v1
+  data:
+    DB_CONNECT_TIMEOUT: "5"
+    DB_HOST: postgres-db
+    DB_NAME: appdb
+    DB_PORT: "5432"
+    DB_SSL: "false"
+  kind: ConfigMap
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"v1","data":{"DB_CONNECT_TIMEOUT":"5","DB_HOST":"postgres-db","DB_NAME":"appdb","DB_PORT":"5432","DB_SSL":"false"},"kind":"ConfigMap","metadata":{"annotations":{},"labels":{"app":"node-api"},"name":"node-api-config","namespace":"multi-service-app"}}
+    creationTimestamp: "2026-09-09T17:14:46Z"
+    labels:
+      app: node-api
+    name: node-api-config
+    namespace: multi-service-app
+    resourceVersion: "332735"
+    uid: 795b3165-574c-46e4-ae15-4c5afd80a258
+- apiVersion: v1
+  data:
+    POSTGRES_DB: appdb
+  kind: ConfigMap
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"v1","data":{"POSTGRES_DB":"appdb"},"kind":"ConfigMap","metadata":{"annotations":{},"labels":{"app":"postgres"},"name":"postgres-config","namespace":"multi-service-app"}}
+    creationTimestamp: "2026-09-08T02:09:31Z"
+    labels:
+      app: postgres
+    name: postgres-config
+    namespace: multi-service-app
+    resourceVersion: "168609"
+    uid: d54a80ac-5764-426d-bc62-22a62f99784e
+- apiVersion: v1
+  data:
+    DB_CONNECT_TIMEOUT: "5"
+    DB_HOST: postgres-db
+    DB_NAME: appdb
+    DB_PORT: "5432"
+    DB_SSLMODE: disable
+  kind: ConfigMap
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"v1","data":{"DB_CONNECT_TIMEOUT":"5","DB_HOST":"postgres-db","DB_NAME":"appdb","DB_PORT":"5432","DB_SSLMODE":"disable"},"kind":"ConfigMap","metadata":{"annotations":{},"labels":{"app":"python-api"},"name":"python-api-config","namespace":"multi-service-app"}}
+    creationTimestamp: "2026-09-08T02:32:13Z"
+    labels:
+      app: python-api
+    name: python-api-config
+    namespace: multi-service-app
+    resourceVersion: "328580"
+    uid: 6c2b0ef9-ecb0-4514-84e6-0d568b56ac00
+- apiVersion: gateway.networking.k8s.io/v1
+  kind: HTTPRoute
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"gateway.networking.k8s.io/v1","kind":"HTTPRoute","metadata":{"annotations":{},"name":"msa-route","namespace":"multi-service-app"},"spec":{"parentRefs":[{"kind":"Gateway","name":"traefik-gateway","namespace":"traefik"}],"rules":[{"backendRefs":[{"name":"python-api","port":80}],"filters":[{"type":"URLRewrite","urlRewrite":{"path":{"replacePrefixMatch":"/","type":"ReplacePrefixMatch"}}}],"matches":[{"path":{"type":"PathPrefix","value":"/api/py"}}]},{"backendRefs":[{"name":"node-api","port":80}],"filters":[{"type":"URLRewrite","urlRewrite":{"path":{"replacePrefixMatch":"/","type":"ReplacePrefixMatch"}}}],"matches":[{"path":{"type":"PathPrefix","value":"/api/node"}}]},{"backendRefs":[{"name":"react-frontend","port":80}],"matches":[{"path":{"type":"PathPrefix","value":"/"}}]}]}}
+    creationTimestamp: "2026-09-09T23:16:28Z"
+    generation: 3
+    name: msa-route
+    namespace: multi-service-app
+    resourceVersion: "368740"
+    uid: 84365a7e-6ac3-4582-9d31-453e22c34735
+  spec:
+    parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: traefik-gateway
+      namespace: traefik
+    rules:
+    - backendRefs:
+      - group: ""
+        kind: Service
+        name: python-api
+        port: 80
+        weight: 1
+      filters:
+      - type: URLRewrite
+        urlRewrite:
+          path:
+            replacePrefixMatch: /
+            type: ReplacePrefixMatch
+      matches:
+      - path:
+          type: PathPrefix
+          value: /api/py
+    - backendRefs:
+      - group: ""
+        kind: Service
+        name: node-api
+        port: 80
+        weight: 1
+      filters:
+      - type: URLRewrite
+        urlRewrite:
+          path:
+            replacePrefixMatch: /
+            type: ReplacePrefixMatch
+      matches:
+      - path:
+          type: PathPrefix
+          value: /api/node
+    - backendRefs:
+      - group: ""
+        kind: Service
+        name: react-frontend
+        port: 80
+        weight: 1
+      matches:
+      - path:
+          type: PathPrefix
+          value: /
+  status:
+    parents:
+    - conditions:
+      - lastTransitionTime: "2026-09-09T23:23:53Z"
+        message: ""
+        observedGeneration: 3
+        reason: Accepted
+        status: "True"
+        type: Accepted
+      - lastTransitionTime: "2026-09-09T23:23:53Z"
+        message: ""
+        observedGeneration: 3
+        reason: ResolvedRefs
+        status: "True"
+        type: ResolvedRefs
+      controllerName: traefik.io/gateway-controller
+      parentRef:
+        group: gateway.networking.k8s.io
+        kind: Gateway
+        name: traefik-gateway
+        namespace: traefik
+- apiVersion: traefik.io/v1alpha1
+  kind: Middleware
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"traefik.io/v1alpha1","kind":"Middleware","metadata":{"annotations":{},"name":"strip-api-node","namespace":"multi-service-app"},"spec":{"stripPrefix":{"prefixes":["/api/node"]}}}
+    creationTimestamp: "2026-09-09T22:59:21Z"
+    generation: 1
+    name: strip-api-node
+    namespace: multi-service-app
+    resourceVersion: "366340"
+    uid: 1679cfbb-d285-44da-b790-178881ea66e6
+  spec:
+    stripPrefix:
+      prefixes:
+      - /api/node
+- apiVersion: traefik.io/v1alpha1
+  kind: Middleware
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"traefik.io/v1alpha1","kind":"Middleware","metadata":{"annotations":{},"name":"strip-api-py","namespace":"multi-service-app"},"spec":{"stripPrefix":{"prefixes":["/api/py"]}}}
+    creationTimestamp: "2026-09-09T22:59:21Z"
+    generation: 1
+    name: strip-api-py
+    namespace: multi-service-app
+    resourceVersion: "366339"
+    uid: 14ab96c1-1941-4098-bc94-12d62743c431
+  spec:
+    stripPrefix:
+      prefixes:
+      - /api/py
+kind: List
+metadata:
+  resourceVersion: ""

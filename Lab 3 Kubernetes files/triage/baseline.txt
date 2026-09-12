@@ -1,0 +1,29 @@
+===== BASELINE Wed Sep  9 08:02:12 PM CST 2026 =====
+--- pods ---
+NAME                              READY   STATUS    RESTARTS     AGE     IP           NODE           NOMINATED NODE   READINESS GATES
+node-api-8d9b44d84-dv2b2          1/1     Running   0            8h      10.244.2.4   lab3-worker2   <none>           <none>
+postgres-5958c859d5-xct4m         1/1     Running   2 (9h ago)   21h     10.244.2.2   lab3-worker2   <none>           <none>
+python-api-5cd5948567-zpcjr       1/1     Running   2 (9h ago)   20h     10.244.2.3   lab3-worker2   <none>           <none>
+react-frontend-7759d55595-fhsld   1/1     Running   0            7h54m   10.244.1.6   lab3-worker    <none>           <none>
+--- deployments ---
+NAME             READY   UP-TO-DATE   AVAILABLE   AGE
+node-api         1/1     1            1           8h
+postgres         1/1     1            1           45h
+python-api       1/1     1            1           21h
+react-frontend   1/1     1            1           7h55m
+--- services ---
+NAME             TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
+node-api         ClusterIP   10.96.99.166    <none>        80/TCP     8h
+postgres-db      ClusterIP   10.96.215.20    <none>        5432/TCP   21h
+python-api       ClusterIP   10.96.152.111   <none>        80/TCP     20h
+react-frontend   ClusterIP   10.96.213.243   <none>        80/TCP     7h53m
+--- endpointslices ---
+NAME                   ADDRESSTYPE   PORTS   ENDPOINTS    AGE
+node-api-pjmvr         IPv4          8002    10.244.2.4   8h
+postgres-db-zqpq7      IPv4          5432    10.244.2.2   21h
+python-api-6wxkq       IPv4          8001    10.244.2.3   20h
+react-frontend-ssr5d   IPv4          8080    10.244.1.6   7h53m
+--- pvc ---
+NAME           STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
+postgres-pvc   Bound    pvc-5702b92d-8890-4203-aba7-5b8b252c8231   2Gi        RWO            standard       <unset>                 45h
+--- events (last 20) ---

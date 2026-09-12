@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-deploy
+  labels:
+    app: web-deploy
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: web-deploy          # MUST match template.metadata.labels below
+  template:
+    metadata:
+      labels:
+        app: web-deploy        # the label stamped on every Pod it creates
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:alpine
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              memory: 64Mi

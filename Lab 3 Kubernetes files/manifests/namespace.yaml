@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: multi-service-app
+  labels:
+    lab: "3"
+    purpose: multi-service-app
